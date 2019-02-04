@@ -1,12 +1,17 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 [![DOI](http://joss.theoj.org/papers/10.21105/joss.01028/status.svg)](https://doi.org/10.21105/joss.01028)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/rr2)](https://cran.r-project.org/package=rr2)
+[![CRAN RStudio mirror
+downloads](http://cranlogs.r-pkg.org/badges/rr2)](http://www.r-pkg.org/pkg/rr2)
+[![CRAN RStudio mirror
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/rr2?color=green)](http://www.r-pkg.org/pkg/rr2)
 
 Goal
 ====
 
 This package provides three R<sup>2</sup>s for statistical models with
-correlated errors including classes: ‘lmerMod’ (LMM), ‘glmerMod’ (GLMM),
-‘phylolm’ (Phylogenetic GLS), and ‘binaryPGLMM/phyloglm/communityPGLMM’
+correlated errors including classes: ‘lmerMod’ (LMM), ‘glmerMod’ (GLMM), 'gls', ‘phylolm’ (Phylogenetic GLS), and ‘binaryPGLMM/phyloglm/communityPGLMM’
 (Phylogenetic Logistic Regression). Detailed technical descriptions can
 be found in [Ives 2018](https://doi.org/10.1093/sysbio/syy060).
 
@@ -16,6 +21,9 @@ Installation
 This package can be installed with:
 
 ``` r
+install.packages("rr2")
+
+# or install the latest version
 # install.packages("devtools")
 devtools::install_github("arives/rr2")
 ```
@@ -48,6 +56,7 @@ This package also has some helper functions such as `inv.logit()`,
 | LMM: lmerMod                     | R2.pred, R2.resid, R2.lik |
 | GLMM: glmerMod                   | R2.pred, R2.resid, R2.lik |
 | PGLS: phylolm                    | R2.pred, R2.resid, R2.lik |
+| PGLS: gls                        | R2.pred, R2.resid, R2.lik |
 | PGLMM: binaryPGLMM               | R2.pred, R2.resid, ——-    |
 | PGLMM: phyloglm                  | ——-, ——–, R2.lik          |
 | PGLMM: communityPGLMM (gaussian) | R2.pred, ——–, R2.lik      |
@@ -243,10 +252,10 @@ PGLS
 
 ``` r
 z.f.pgls <- phylolm::phylolm(y_pgls ~ x_trait, phy = phy, data = d, model = "lambda")
-z.v.pgls <- lm(y_pgls ~ x_trait, data = d)
+z.v.lm <- lm(y_pgls ~ x_trait, data = d)
 
 # phy is needed for phylogenetic models' R2.resid and R2.pred
-R2(mod = z.f.pgls, mod.r = z.v.pgls, phy = phy)
+R2(mod = z.f.pgls, mod.r = z.v.lm, phy = phy)
 ```
 
     ##    R2_lik  R2_resid   R2_pred 
@@ -258,6 +267,23 @@ R2(mod = z.f.pgls, phy = phy)
 
     ##    R2_lik  R2_resid   R2_pred 
     ## 0.8642865 0.8862266 0.8777782
+
+``` r
+# This also works for models fit with nlme::gls()
+z.f.gls <- nlme::gls(y_pgls ~ x_trait, data = d, correlation = ape::corPagel(1, phy), method = "ML")
+z.x.gls <- nlme::gls(y_pgls ~ 1, data = d, correlation = ape::corPagel(1, phy), method = "ML")
+R2(mod = z.f.gls, mod.r = z.v.lm)
+```
+
+    ##    R2_lik  R2_resid   R2_pred 
+    ## 0.2353912 0.3590294 0.3114048
+
+``` r
+R2(mod = z.f.gls)
+```
+
+    ##    R2_lik  R2_resid   R2_pred 
+    ## 0.8642865 0.8862315 0.8777784
 
 Phylogenetic Logistic Regression
 --------------------------------

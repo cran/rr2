@@ -2,7 +2,7 @@
 #'
 #' Calculate partial and total R2s for LMM, GLMM, PGLS, and PGLMM using R2.lik, an R2 based on the likelihood of observing the data.
 #' 
-#' @param mod A regression model with one of the following classes: 'lm', 'glm', 'lmerMod', 'glmerMod', 'phylolm', 'phyloglm', or 'communityPGLMM'.
+#' @param mod A regression model with one of the following classes: 'lm', 'glm', 'lmerMod', 'glmerMod', 'phylolm', 'phyloglm', 'gls', or 'communityPGLMM'.
 #' @param mod.r A reduced model; if not provided, the total R2 will be given by setting 'mod.r' to the model corresponding to 'mod' with the intercept as the only predictor.
 #' @return R2.lik value.
 #' @export
@@ -25,9 +25,11 @@
 #' 
 #' Nagelkerke 1991. A note on a general definition of the coefficient of determination. Biometrika 78:691–692.
 #' 
-#' @examples library(ape)
+#' @examples 
+#' library(ape)
 #' library(phylolm)
 #' library(lme4)
+#' library(nlme)
 #' 
 #' #################
 #' # LMM with two fixed and two random effects 
@@ -115,6 +117,14 @@
 #' R2.lik(z.f, z.v)
 #' R2.lik(z.f)
 #' 
+#' # This also works for models fit with gls() in {nlme}
+#' z.x <- gls(y ~ 1, data = d, correlation = corPagel(1, phy), method = "ML")
+#' z.f <- gls(y ~ x, data = d, correlation = corPagel(1, phy), method = "ML")
+#' z.v <- lm(y ~ x, data = d)
+#' R2.lik(z.f, z.x)
+#' R2.lik(z.f, z.v)
+#' R2.lik(z.f)
+#' 
 #' #################
 #' # PGLMM with one fixed effect
 #' 
@@ -148,8 +158,8 @@ R2.lik <- function(mod = NULL, mod.r = NULL) {
         class(mod) <- "lmerMod"
     
     if (!is.element(class(mod)[1], c("lm", "glm", "lmerMod", "glmerMod", "phylolm", 
-        "phyloglm", "communityPGLMM"))) {
-        stop("mod must be class one of classes lm, glm, lmerMod, glmerMod, phylolm, phyloglm, communityPGLMM.")
+        "phyloglm", "gls", "communityPGLMM"))) {
+        stop("mod must be class one of classes lm, glm, lmerMod, glmerMod, phylolm, phyloglm, gls, communityPGLMM.")
     }
     
     if (class(mod)[1] == "lm") {
@@ -234,6 +244,17 @@ R2.lik <- function(mod = NULL, mod.r = NULL) {
         return(R2.lik.phyloglm(mod, mod.r)[1])
     }
     
+    if (class(mod)[1] == "gls") {
+      if (!is.object(mod.r)) {
+        y <- as.numeric(fitted(mod) + resid(mod))
+        mod.r <- lm(y ~ 1)
+      }
+      if (!is.element(class(mod.r)[1], c("gls", "lm"))) {
+        stop("mod.r must be class gls or lm.")
+      }
+      return(R2.lik.gls(mod, mod.r))
+    }
+
     if (class(mod)[1] == "communityPGLMM") {
         if (mod$family == "binomial") 
             stop("Binary communityPGLMMs do not have log likelihood,
@@ -308,6 +329,14 @@ R2.lik.phyloglm <- function(mod = NULL, mod.r = NULL) {
     
     return(R2.lik)
 }
+
+R2.lik.gls <- function(mod = NULL, mod.r = NULL) {
+  n <- mod$dims$N
+  R2.lik <- 1 - exp(-2/n * (logLik(mod)[[1]] - logLik(mod.r)[[1]]))
+  return(R2.lik)
+}
+
+
 
 R2.like.communityPGLMM <- function(mod = NULL, mod.r = NULL) {
     n <- nrow(mod$X)

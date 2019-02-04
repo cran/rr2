@@ -7,7 +7,7 @@
 R2.lik(mod = NULL, mod.r = NULL)
 }
 \arguments{
-\item{mod}{A regression model with one of the following classes: 'lm', 'glm', 'lmerMod', 'glmerMod', 'phylolm', 'phyloglm', or 'communityPGLMM'.}
+\item{mod}{A regression model with one of the following classes: 'lm', 'glm', 'lmerMod', 'glmerMod', 'phylolm', 'phyloglm', 'gls', or 'communityPGLMM'.}
 
 \item{mod.r}{A reduced model; if not provided, the total R2 will be given by setting 'mod.r' to the model corresponding to 'mod' with the intercept as the only predictor.}
 }
@@ -32,6 +32,7 @@ Note that \code{phyloglm()} can have difficulties in finding solutions when ther
 library(ape)
 library(phylolm)
 library(lme4)
+library(nlme)
 
 #################
 # LMM with two fixed and two random effects 
@@ -115,6 +116,14 @@ lam.x <- round(z.x$optpar, digits = 4)
 z.f <- phylolm(y ~ x, phy = phy, data = d, model = 'lambda')
 z.v <- lm(y ~ x, data = d)
 
+R2.lik(z.f, z.x)
+R2.lik(z.f, z.v)
+R2.lik(z.f)
+
+# This also works for models fit with gls() in {nlme}
+z.x <- gls(y ~ 1, data = d, correlation = corPagel(1, phy), method = "ML")
+z.f <- gls(y ~ x, data = d, correlation = corPagel(1, phy), method = "ML")
+z.v <- lm(y ~ x, data = d)
 R2.lik(z.f, z.x)
 R2.lik(z.f, z.v)
 R2.lik(z.f)
