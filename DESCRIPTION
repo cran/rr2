@@ -1,7 +1,7 @@
 Package: rr2
 Type: Package
 Title: R2s for Regression Models
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(
     person("Anthony", "Ives", , "arives@wisc.edu", c("aut", "cre")),
     person("Daijiang", "Li", , "daijianglee@gmail.com", role = "ctb"))
@@ -19,9 +19,9 @@ Suggests: testthat
 URL: https://github.com/arives/rr2
 BugReports: https://github.com/arives/rr2/issues
 NeedsCompilation: no
-Packaged: 2019-02-04 00:55:11 UTC; arives
+Packaged: 2019-05-09 20:08:29 UTC; arives
 Author: Anthony Ives [aut, cre],
   Daijiang Li [ctb]
 Maintainer: Anthony Ives <arives@wisc.edu>
 Repository: CRAN
-Date/Publication: 2019-02-04 09:50:07 UTC
+Date/Publication: 2019-05-09 20:30:03 UTC
