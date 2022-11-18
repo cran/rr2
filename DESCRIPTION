@@ -1,7 +1,7 @@
 Package: rr2
 Type: Package
 Title: R2s for Regression Models
-Version: 1.0.2
+Version: 1.1.0
 Authors@R: c(
     person("Anthony", "Ives", , "arives@wisc.edu", c("aut", "cre")),
     person("Daijiang", "Li", , "daijianglee@gmail.com", role = "ctb"))
@@ -12,16 +12,16 @@ Description: Three methods to calculate R2 for models with correlated errors,
 License: GPL-3
 Depends: R (>= 3.0), stats
 Encoding: UTF-8
-LazyData: true
-Imports: lme4, phylolm, ape, utils, Matrix, nlme
-RoxygenNote: 6.1.1
-Suggests: testthat
+Imports: lme4, phylolm (>= 2.6.2), ape, utils, Matrix, nlme, phyr (>=
+        1.0.3)
+RoxygenNote: 7.2.1
+Suggests: testthat, mvtnorm
 URL: https://github.com/arives/rr2
 BugReports: https://github.com/arives/rr2/issues
 NeedsCompilation: no
-Packaged: 2019-05-09 20:08:29 UTC; arives
+Packaged: 2022-11-18 19:27:45 UTC; dli
 Author: Anthony Ives [aut, cre],
   Daijiang Li [ctb]
 Maintainer: Anthony Ives <arives@wisc.edu>
 Repository: CRAN
-Date/Publication: 2019-05-09 20:30:03 UTC
+Date/Publication: 2022-11-18 19:50:02 UTC

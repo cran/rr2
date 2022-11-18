@@ -1,7 +1,7 @@
 context("testing R2 functions")
 
 # data 
-set.seed(123456)
+set.seed(12345)
 p1 <- 10; nsample <- 20; n <- p1 * nsample
 d <- data.frame(x1 = rnorm(n = n), 
                 x2 = rnorm(n = n), 
@@ -107,17 +107,17 @@ test_that("when missing mod.r, the functions will automatically create one, long
   z.v.plog <- glm(y_phy_binary ~ 1, data = d, family = "binomial")
   # R2.lik can't be used with binaryPGLMM because it is not a ML method
   expect_message(t1 <- R2(mod = z.f.plog, mod.r = z.v.plog), 
-                 "Models of class binaryPGLMM do not have R2.lik method")
+                 "Models of class binaryPGLMM do not have a R2.lik method")
   expect_message(t2 <- R2(mod = z.f.plog, mod.r = z.v.plog), 
-                 "Models of class binaryPGLMM do not have R2.lik method")
+                 "Models of class binaryPGLMM do not have a R2.lik method")
   expect_equal(t1, t2)
   
   z.f.plog2 <- phylolm::phyloglm(y_phy_binary ~ x1, data = d, start.alpha = 1, phy = phy)
   z.v.plog2 <- glm(y_phy_binary ~ 1, data = d, family = "binomial")
-  expect_message(t11 <- R2(z.f.plog2, z.v.plog2),
-                 "Models of class phyloglm only have R2.lik method")
+  expect_message(t11 <- R2(mod = z.f.plog2, mod.r = z.v.plog2),
+                 "Models of class phyloglm only have a R2.lik method")
   expect_message(t12 <- R2(z.f.plog2),
-                 "Models of class phyloglm only have R2.lik method")
+                 "Models of class phyloglm only have a R2.lik method")
   expect_equal(t11, t12)
   
   # # communityPGLMM
@@ -133,4 +133,36 @@ test_that("when lmer models were fitted with REML = T,
           R2.lr (but not R2.ls and R2.ce) will change it to FALSE", {
   z.f2 <- lme4::lmer(y_re_intercept ~ x1 + x2 + (1 | u1) + (1 | u2), data = d, REML = T)
   expect_warning(R2(z.f2), "mod updated with REML = F")
+})
+
+test_that("alphaWarn for phylogenetic logistic regression with phyloglm", {
+  testthat::skip_on_cran() # don't run on CRAN since these are time consuming
+  set.seed(12345)
+  n <- 100
+  b1 <- 1.5
+  signal <- 1
+  
+  phy <- ape::compute.brlen(ape::rtree(n = n), method = 'Grafen', power = 1)
+  phy.x <- ape::compute.brlen(phy, method = 'Grafen', power = .0001)
+  
+  # Generate random data
+  x <- rnorm(n)
+  d <- data.frame(x = x, y = 0)
+  
+  e <- signal * ape::rTraitCont(phy, model = 'BM', sigma = 1)
+  e <- e[match(phy$tip.label, names(e))]
+  
+  d$y <- rbinom(n = n, size = 1, prob = rr2::inv.logit(b1 * d$x + e))
+  rownames(d) <- phy$tip.label
+  
+  # Use the function phyloglm() from the phylolm package.
+  z.f.phyloglm <- phylolm::phyloglm(y ~ x, data = d, start.alpha = 1, phy = phy)
+  z.x.phyloglm <- phylolm::phyloglm(y ~ 1, data = d, phy = phy, 
+                                    start.alpha = min(20, z.f.phyloglm$alpha))
+  z.v <- glm(y ~ x, data = d, family = 'binomial')
+  
+  expect_warning(R2(mod = z.f.phyloglm, mod.r = z.x.phyloglm), 
+                 "In mod, alphaWarn = 2, so model refit with glm()")
+  expect_warning(R2(mod = z.f.phyloglm, mod.r = z.v), 
+                 "In mod, alphaWarn = 2, so model refit with glm()")
 })

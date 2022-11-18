@@ -1,4 +1,5 @@
 #' @importFrom utils tail
+#' @importFrom phyr pglmm_predicted_values
 #' @importFrom stats anova binomial family glm lm logLik model.frame model.matrix model.response optim pchisq pnorm poisson quantile reorder rnorm sd sigma update var na.omit fitted predict dnorm qnorm resid 
 #' @importMethodsFrom Matrix t %*% crossprod diag tcrossprod solve determinant update
 NULL
@@ -66,7 +67,7 @@ partialR2adj <- function(mod, df.f = summary(mod)$df[1],
 #' @export
 #' 
 transf_phy <- function(phylolmMod, phy) {
-    if (!phylolmMod$model %in% c("BM", "trend")) {
+  if (!phylolmMod$model %in% c("BM", "trend")) {
         # optpar for BM models is NULL
         optpar <- round(phylolmMod$optpar, digits = 4)
         m.list <- list(x = optpar)
